@@ -1,0 +1,1444 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exercice — Création de Personas (Résid'Azur)</title>
+  <meta name="description" content="Activité interactive de création de personas pour la formation CCE Formateur en entreprise.">
+
+  <!-- Google Fonts: Fira Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+
+  <!-- jsPDF via CDN pour l'export des réponses -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <style>
+    :root {
+      --color-primary: #810464;
+      --color-primary-hover: #680350;
+      --color-primary-light: rgba(129, 4, 100, 0.08);
+      --color-primary-border: rgba(129, 4, 100, 0.25);
+      --color-bg: #E8E9DD;
+      --color-text: #1f2937;
+      --color-text-muted: #6b7280;
+      --color-border: #e5e7eb;
+      --font-family: 'Fira Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-family);
+      background-color: var(--color-bg);
+      color: var(--color-text);
+      line-height: 1.5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Header */
+    header {
+      background-color: #ffffff;
+      border-bottom: 1px solid var(--color-border);
+      padding: 1rem 1.25rem;
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+
+    .header-container {
+      max-width: 72rem;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .btn-nav {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: #4b5563;
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 0.9375rem;
+      padding: 0.5rem 0.75rem;
+      border-radius: 0.5rem;
+      border: 1px solid transparent;
+      background: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+
+    .btn-nav:hover,
+    .btn-nav:focus-visible {
+      color: var(--color-primary);
+      background-color: var(--color-primary-light);
+      border-color: var(--color-primary-border);
+      outline: none;
+    }
+
+    .header-titles {
+      text-align: center;
+      flex-grow: 1;
+    }
+
+    .header-titles h1 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #111827;
+      margin-bottom: 0.125rem;
+    }
+
+    @media (min-width: 640px) {
+      .header-titles h1 {
+        font-size: 1.5rem;
+      }
+    }
+
+    .header-titles p {
+      font-size: 0.8125rem;
+      color: var(--color-text-muted);
+      font-weight: 500;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    /* Main container */
+    main {
+      max-width: 72rem;
+      width: 100%;
+      margin: 0 auto;
+      padding: 2rem 1rem 5rem 1rem;
+      flex-grow: 1;
+    }
+
+    /* Sections collapsibles */
+    .collapsible-card {
+      background-color: #ffffff;
+      border-radius: 0.875rem;
+      border: 1px solid var(--color-primary-border);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      margin-bottom: 1.5rem;
+      overflow: hidden;
+      transition: border-color 0.2s ease;
+    }
+
+    .collapsible-header {
+      width: 100%;
+      padding: 1rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background-color: #ffffff;
+      border: none;
+      cursor: pointer;
+      text-align: left;
+      font-family: inherit;
+      transition: background-color 0.2s ease;
+    }
+
+    .collapsible-header:hover {
+      background-color: #f9fafb;
+    }
+
+    .collapsible-header:focus-visible {
+      outline: 2px solid var(--color-primary);
+      outline-offset: -2px;
+    }
+
+    .collapsible-header-left {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .collapsible-header-left svg {
+      color: var(--color-primary);
+      flex-shrink: 0;
+    }
+
+    .collapsible-header h2 {
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: #1f2937;
+    }
+
+    .chevron-icon {
+      color: var(--color-primary);
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      flex-shrink: 0;
+    }
+
+    .collapsible-card.open .chevron-icon {
+      transform: rotate(180deg);
+    }
+
+    .collapsible-content {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+      opacity: 0;
+      border-top: 1px solid transparent;
+    }
+
+    .collapsible-card.open .collapsible-content {
+      max-height: 1200px;
+      opacity: 1;
+      border-top-color: #f3f4f6;
+    }
+
+    .collapsible-body {
+      padding: 0.75rem 1.5rem 1.5rem 1.5rem;
+      font-size: 0.9375rem;
+      color: #374151;
+      line-height: 1.6;
+    }
+
+    /* Callouts & Content styles */
+    .callout-attention {
+      background-color: var(--color-primary-light);
+      border-left: 4px solid var(--color-primary);
+      padding: 1rem;
+      margin: 1rem 0;
+      border-radius: 0 0.5rem 0.5rem 0;
+    }
+
+    .callout-attention .callout-title {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--color-primary);
+      margin-bottom: 0.25rem;
+      letter-spacing: 0.05em;
+    }
+
+    .content-subtitle {
+      font-weight: 700;
+      color: #111827;
+      margin-top: 1.25rem;
+      margin-bottom: 0.5rem;
+      font-size: 1rem;
+    }
+
+    .contexte-list {
+      list-style-type: none;
+      padding-left: 0;
+      margin-top: 0.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.625rem;
+    }
+
+    .contexte-list li {
+      position: relative;
+      padding-left: 1.25rem;
+    }
+
+    .contexte-list li::before {
+      content: "•";
+      position: absolute;
+      left: 0.25rem;
+      color: var(--color-primary);
+      font-weight: bold;
+    }
+
+    /* Personas Grid */
+    .personas-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 2rem;
+      margin-top: 2.5rem;
+    }
+
+    @media (min-width: 768px) {
+      .personas-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    /* Persona Card */
+    .persona-card {
+      background-color: #ffffff;
+      border-radius: 1rem;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+      border: 1px solid #f3f4f6;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .persona-profile-top {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.75rem;
+      text-align: center;
+    }
+
+    .avatar-wrapper {
+      position: relative;
+    }
+
+    .avatar-circle {
+      width: 6rem;
+      height: 6rem;
+      border-radius: 9999px;
+      background-color: #f3f4f6;
+      border: 2px solid var(--color-primary-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .avatar-circle img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .avatar-placeholder {
+      width: 3rem;
+      height: 3rem;
+      color: #9ca3af;
+    }
+
+    .btn-remove-photo {
+      position: absolute;
+      top: -0.25rem;
+      right: -0.25rem;
+      background-color: #ef4444;
+      color: #ffffff;
+      width: 1.5rem;
+      height: 1.5rem;
+      border-radius: 9999px;
+      border: none;
+      cursor: pointer;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+      transition: background-color 0.2s ease, transform 0.15s ease;
+    }
+
+    .btn-remove-photo:hover {
+      background-color: #dc2626;
+      transform: scale(1.1);
+    }
+
+    .avatar-wrapper.has-photo .btn-remove-photo {
+      display: flex;
+    }
+
+    .btn-photo-action {
+      background: none;
+      border: none;
+      color: var(--color-primary);
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.25rem 0.5rem;
+      border-radius: 0.375rem;
+      transition: all 0.2s ease;
+    }
+
+    .btn-photo-action:hover {
+      text-decoration: underline;
+      background-color: var(--color-primary-light);
+    }
+
+    .persona-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--color-primary);
+      margin-top: 0.25rem;
+    }
+
+    /* Form fields */
+    .persona-form-fields {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .form-row-2col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.375rem;
+    }
+
+    .form-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--color-text-muted);
+    }
+
+    .form-input,
+    .form-textarea {
+      width: 100%;
+      padding: 0.625rem 0.75rem;
+      border-radius: 0.5rem;
+      border: 1px solid #d1d5db;
+      font-family: inherit;
+      font-size: 0.9375rem;
+      color: #111827;
+      background-color: #ffffff;
+      outline: none;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .form-input:focus,
+    .form-textarea:focus {
+      border-color: var(--color-primary);
+      box-shadow: 0 0 0 3px rgba(129, 4, 100, 0.15);
+    }
+
+    .form-textarea {
+      resize: vertical;
+      min-height: 4.5rem;
+    }
+
+    /* Validation section */
+    .validation-section {
+      margin-top: 3rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .warning-message {
+      display: none;
+      align-items: center;
+      gap: 0.5rem;
+      background-color: #fef2f2;
+      color: #b91c1c;
+      padding: 0.625rem 1rem;
+      border-radius: 0.5rem;
+      border: 1px solid #fee2e2;
+      font-size: 0.875rem;
+      font-weight: 500;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .warning-message.visible {
+      display: flex;
+    }
+
+    .btn-validate {
+      background-color: var(--color-primary);
+      color: #ffffff;
+      border: none;
+      padding: 1rem 2rem;
+      font-size: 1.125rem;
+      font-weight: 700;
+      font-family: inherit;
+      border-radius: 0.75rem;
+      cursor: pointer;
+      box-shadow: 0 10px 15px -3px rgba(129, 4, 100, 0.3), 0 4px 6px -4px rgba(129, 4, 100, 0.2);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.625rem;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .btn-validate:hover {
+      background-color: var(--color-primary-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 14px 20px -3px rgba(129, 4, 100, 0.4);
+    }
+
+    .btn-validate:active {
+      transform: translateY(0) scale(0.98);
+    }
+
+    /* Autosave toast indicator */
+    .autosave-indicator {
+      position: fixed;
+      bottom: 1rem;
+      right: 1rem;
+      z-index: 20;
+      background-color: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(4px);
+      border: 1px solid #e5e7eb;
+      padding: 0.375rem 0.75rem;
+      border-radius: 9999px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.6875rem;
+      font-weight: 500;
+      color: #6b7280;
+    }
+
+    .pulse-dot {
+      width: 0.5rem;
+      height: 0.5rem;
+      border-radius: 9999px;
+      background-color: #10b981;
+      animation: pulseAnimation 2s infinite;
+    }
+
+    @keyframes pulseAnimation {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background-color: rgba(0, 0, 0, 0.45);
+      backdrop-filter: blur(4px);
+      z-index: 50;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      opacity: 0;
+      transition: opacity 0.25s ease;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+      opacity: 1;
+    }
+
+    .modal-card {
+      background-color: #ffffff;
+      border-radius: 1.5rem;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+      width: 100%;
+      max-width: 28rem;
+      overflow: hidden;
+      transform: scale(0.92) translateY(10px);
+      opacity: 0;
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease;
+    }
+
+    .modal-overlay.active .modal-card {
+      transform: scale(1) translateY(0);
+      opacity: 1;
+    }
+
+    .modal-header {
+      background-color: var(--color-primary);
+      padding: 2rem 1.5rem;
+      text-align: center;
+      color: #ffffff;
+    }
+
+    .modal-icon-badge {
+      width: 4rem;
+      height: 4rem;
+      border-radius: 9999px;
+      background-color: rgba(255, 255, 255, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1rem auto;
+    }
+
+    .modal-header h3 {
+      font-size: 1.5rem;
+      font-weight: 700;
+    }
+
+    .modal-header p {
+      color: rgba(255, 255, 255, 0.85);
+      margin-top: 0.375rem;
+      font-size: 0.9375rem;
+    }
+
+    .modal-body {
+      padding: 1.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .btn-modal-action {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 1.25rem;
+      border-radius: 1rem;
+      border: 2px solid #f3f4f6;
+      background-color: #ffffff;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: inherit;
+    }
+
+    .btn-modal-action:hover {
+      border-color: var(--color-primary);
+      background-color: var(--color-primary-light);
+    }
+
+    .btn-modal-action-left {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      text-align: left;
+    }
+
+    .modal-action-icon {
+      width: 2.75rem;
+      height: 2.75rem;
+      border-radius: 0.75rem;
+      background-color: var(--color-primary-light);
+      color: var(--color-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+      flex-shrink: 0;
+    }
+
+    .btn-modal-action:hover .modal-action-icon {
+      background-color: var(--color-primary);
+      color: #ffffff;
+    }
+
+    .modal-action-text .title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #111827;
+    }
+
+    .modal-action-text .subtitle {
+      font-size: 0.75rem;
+      color: var(--color-text-muted);
+    }
+
+    .btn-modal-close {
+      width: 100%;
+      padding: 0.75rem;
+      background: none;
+      border: none;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: #9ca3af;
+      cursor: pointer;
+      border-radius: 0.5rem;
+      transition: color 0.2s ease;
+      font-family: inherit;
+    }
+
+    .btn-modal-close:hover {
+      color: #4b5563;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header role="banner">
+    <div class="header-container">
+      <a 
+        href="https://1001parcours.cci.fr/experience/mod/page/view.php?id=2129" 
+        class="btn-nav"
+        title="Retourner au parcours de formation"
+      >
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <line x1="19" y1="12" x2="5" y2="12"></line>
+          <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+        <span>Retour</span>
+      </a>
+
+      <div class="header-titles">
+        <h1>Exercice — Création de Personas</h1>
+        <p>CCE « Exercer la mission de formateur en entreprise »</p>
+      </div>
+
+      <div class="header-actions">
+        <button 
+          id="btnFullscreen" 
+          class="btn-nav" 
+          type="button"
+          aria-label="Activer le mode plein écran"
+          title="Basculer en plein écran"
+        >
+          <svg id="iconMaximize" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="15 3 21 3 21 9"></polyline>
+            <polyline points="9 21 3 21 3 15"></polyline>
+            <line x1="21" y1="3" x2="14" y2="10"></line>
+            <line x1="3" y1="21" x2="10" y2="14"></line>
+          </svg>
+          <svg id="iconMinimize" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display: none;">
+            <polyline points="4 14 10 14 10 20"></polyline>
+            <polyline points="20 10 14 10 14 4"></polyline>
+            <line x1="14" y1="10" x2="21" y2="3"></line>
+            <line x1="3" y1="21" x2="10" y2="14"></line>
+          </svg>
+          <span class="fullscreen-text" style="display: none;">Plein écran</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main role="main">
+    
+    <!-- Consigne Section (ouverte par défaut) -->
+    <section class="collapsible-card open" id="sectionConsigne">
+      <button 
+        type="button" 
+        class="collapsible-header" 
+        aria-expanded="true" 
+        aria-controls="contentConsigne"
+        onclick="toggleSection('sectionConsigne')"
+      >
+        <div class="collapsible-header-left">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+          <h2>Consigne</h2>
+        </div>
+        <svg class="chevron-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polyline points="6 9 12 15 18 9"></polyline>
+        </svg>
+      </button>
+
+      <div class="collapsible-content" id="contentConsigne">
+        <div class="collapsible-body">
+          <p>
+            À partir des informations transmises dans la demande de formation de Résid'Azur, complétez les deux fiches personas ci-dessous. L'un des deux personas devra être porteur du handicap mentionné dans la demande.
+          </p>
+
+          <div class="callout-attention">
+            <div class="callout-title">Attention :</div>
+            <p>
+              Certaines informations ne sont pas explicitement fournies par le commanditaire (notamment la motivation/réticence et les besoins détaillés). Il vous appartient de les imaginer de manière réaliste et cohérente, en vous appuyant sur le contexte donné et votre compréhension du profil des apprenants.
+            </p>
+          </div>
+
+          <div class="content-subtitle">Rappel : qu'est-ce qu'un persona ?</div>
+          <p>
+            Un persona est un profil fictif mais réaliste représentant un apprenant type de la formation. Il synthétise les caractéristiques clés du public cible : âge, poste, niveau de compétence, motivations, freins éventuels et besoins spécifiques. Construire un ou plusieurs personas aide le formateur à concevoir une action de formation centrée sur les besoins réels des participants, plutôt que sur des hypothèses abstraites.
+          </p>
+
+          <p style="margin-top: 1rem; font-weight: 700;">
+            Personas à compléter : Michelle et Ziang
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Contexte Section (fermée par défaut) -->
+    <section class="collapsible-card" id="sectionContexte">
+      <button 
+        type="button" 
+        class="collapsible-header" 
+        aria-expanded="false" 
+        aria-controls="contentContexte"
+        onclick="toggleSection('sectionContexte')"
+      >
+        <div class="collapsible-header-left">
+          <span style="font-size: 1.125rem;">📋</span>
+          <h2>Demande de formation Résid'Azur</h2>
+        </div>
+        <svg class="chevron-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polyline points="6 9 12 15 18 9"></polyline>
+        </svg>
+      </button>
+
+      <div class="collapsible-content" id="contentContexte">
+        <div class="collapsible-body">
+          <div class="content-subtitle" style="margin-top: 0;">Caractéristiques de Résid'Azur :</div>
+          <ul class="contexte-list">
+            <li><strong>Groupe :</strong> 180 personnes (20 à 57 ans), 4 résidences (Nice, Marseille, Montpellier, Perpignan).</li>
+            <li><strong>Public cible :</strong> 120 collaborateurs (réceptionnistes et responsables de résidence).</li>
+            <li><strong>Format :</strong> Présentiel, 2 jours (14h), groupes de 10-12 participants.</li>
+            <li><strong>Niveau initial :</strong> Très hétérogène (de 6 mois à 15 ans d'ancienneté). Aucune formation préalable en gestion des conflits.</li>
+            <li><strong>Handicap :</strong> Une collaboratrice du site de Marseille est en situation de handicap visuel.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Personas Grid -->
+    <div class="personas-grid">
+
+      <!-- Carte Michelle -->
+      <article class="persona-card" id="card-michelle">
+        <div class="persona-profile-top">
+          <div class="avatar-wrapper" id="avatarWrapper-michelle">
+            <div class="avatar-circle">
+              <img id="avatarImg-michelle" src="" alt="Photo de Michelle" style="display: none;">
+              <svg id="avatarPlaceholder-michelle" class="avatar-placeholder" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
+            </div>
+            <button 
+              type="button" 
+              class="btn-remove-photo" 
+              onclick="removePhoto('michelle')" 
+              title="Supprimer la photo"
+              aria-label="Supprimer la photo de Michelle"
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+          </div>
+
+          <button 
+            type="button" 
+            class="btn-photo-action" 
+            onclick="document.getElementById('fileInput-michelle').click()"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+              <circle cx="12" cy="13" r="4"></circle>
+            </svg>
+            <span id="photoBtnText-michelle">Ajouter une photo</span>
+          </button>
+          <input 
+            type="file" 
+            id="fileInput-michelle" 
+            style="display: none;" 
+            accept="image/*" 
+            onchange="handlePhotoUpload('michelle', event)"
+          >
+
+          <h3 class="persona-title">Michelle</h3>
+        </div>
+
+        <div class="persona-form-fields">
+          <div class="form-row-2col">
+            <div class="form-group">
+              <label for="michelle-age" class="form-label">Âge</label>
+              <input 
+                type="text" 
+                id="michelle-age" 
+                class="form-input" 
+                placeholder="Ex : 45 ans" 
+                oninput="handleFieldChange('michelle', 'age', this.value)"
+              >
+            </div>
+            <div class="form-group">
+              <label for="michelle-gender" class="form-label">Genre</label>
+              <input 
+                type="text" 
+                id="michelle-gender" 
+                class="form-input" 
+                placeholder="Ex : Femme" 
+                oninput="handleFieldChange('michelle', 'gender', this.value)"
+              >
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="michelle-seniority" class="form-label">Ancienneté</label>
+            <input 
+              type="text" 
+              id="michelle-seniority" 
+              class="form-input" 
+              placeholder="Ex : 10 ans dans l'entreprise" 
+              oninput="handleFieldChange('michelle', 'seniority', this.value)"
+            >
+          </div>
+
+          <div class="form-group">
+            <label for="michelle-position" class="form-label">Poste</label>
+            <input 
+              type="text" 
+              id="michelle-position" 
+              class="form-input" 
+              placeholder="Ex : Réceptionniste" 
+              oninput="handleFieldChange('michelle', 'position', this.value)"
+            >
+          </div>
+
+          <div class="form-group">
+            <label for="michelle-experienceLevel" class="form-label">Niveau d'expérience</label>
+            <textarea 
+              id="michelle-experienceLevel" 
+              class="form-textarea" 
+              rows="3" 
+              placeholder="Décrivez le niveau d'expérience..." 
+              oninput="handleFieldChange('michelle', 'experienceLevel', this.value)"
+            ></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="michelle-motivation" class="form-label">Motivation (ou réticence)</label>
+            <textarea 
+              id="michelle-motivation" 
+              class="form-textarea" 
+              rows="4" 
+              placeholder="Décrivez les motivations ou freins de ce persona..." 
+              oninput="handleFieldChange('michelle', 'motivation', this.value)"
+            ></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="michelle-needs" class="form-label">Besoins</label>
+            <textarea 
+              id="michelle-needs" 
+              class="form-textarea" 
+              rows="4" 
+              placeholder="Décrivez les besoins, y compris les adaptations liées au handicap le cas échéant..." 
+              oninput="handleFieldChange('michelle', 'needs', this.value)"
+            ></textarea>
+          </div>
+        </div>
+      </article>
+
+      <!-- Carte Ziang -->
+      <article class="persona-card" id="card-ziang">
+        <div class="persona-profile-top">
+          <div class="avatar-wrapper" id="avatarWrapper-ziang">
+            <div class="avatar-circle">
+              <img id="avatarImg-ziang" src="" alt="Photo de Ziang" style="display: none;">
+              <svg id="avatarPlaceholder-ziang" class="avatar-placeholder" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
+            </div>
+            <button 
+              type="button" 
+              class="btn-remove-photo" 
+              onclick="removePhoto('ziang')" 
+              title="Supprimer la photo"
+              aria-label="Supprimer la photo de Ziang"
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+          </div>
+
+          <button 
+            type="button" 
+            class="btn-photo-action" 
+            onclick="document.getElementById('fileInput-ziang').click()"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+              <circle cx="12" cy="13" r="4"></circle>
+            </svg>
+            <span id="photoBtnText-ziang">Ajouter une photo</span>
+          </button>
+          <input 
+            type="file" 
+            id="fileInput-ziang" 
+            style="display: none;" 
+            accept="image/*" 
+            onchange="handlePhotoUpload('ziang', event)"
+          >
+
+          <h3 class="persona-title">Ziang</h3>
+        </div>
+
+        <div class="persona-form-fields">
+          <div class="form-row-2col">
+            <div class="form-group">
+              <label for="ziang-age" class="form-label">Âge</label>
+              <input 
+                type="text" 
+                id="ziang-age" 
+                class="form-input" 
+                placeholder="Ex : 45 ans" 
+                oninput="handleFieldChange('ziang', 'age', this.value)"
+              >
+            </div>
+            <div class="form-group">
+              <label for="ziang-gender" class="form-label">Genre</label>
+              <input 
+                type="text" 
+                id="ziang-gender" 
+                class="form-input" 
+                placeholder="Ex : Homme" 
+                oninput="handleFieldChange('ziang', 'gender', this.value)"
+              >
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="ziang-seniority" class="form-label">Ancienneté</label>
+            <input 
+              type="text" 
+              id="ziang-seniority" 
+              class="form-input" 
+              placeholder="Ex : 10 ans dans l'entreprise" 
+              oninput="handleFieldChange('ziang', 'seniority', this.value)"
+            >
+          </div>
+
+          <div class="form-group">
+            <label for="ziang-position" class="form-label">Poste</label>
+            <input 
+              type="text" 
+              id="ziang-position" 
+              class="form-input" 
+              placeholder="Ex : Réceptionniste" 
+              oninput="handleFieldChange('ziang', 'position', this.value)"
+            >
+          </div>
+
+          <div class="form-group">
+            <label for="ziang-experienceLevel" class="form-label">Niveau d'expérience</label>
+            <textarea 
+              id="ziang-experienceLevel" 
+              class="form-textarea" 
+              rows="3" 
+              placeholder="Décrivez le niveau d'expérience..." 
+              oninput="handleFieldChange('ziang', 'experienceLevel', this.value)"
+            ></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="ziang-motivation" class="form-label">Motivation (ou réticence)</label>
+            <textarea 
+              id="ziang-motivation" 
+              class="form-textarea" 
+              rows="4" 
+              placeholder="Décrivez les motivations ou freins de ce persona..." 
+              oninput="handleFieldChange('ziang', 'motivation', this.value)"
+            ></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="ziang-needs" class="form-label">Besoins</label>
+            <textarea 
+              id="ziang-needs" 
+              class="form-textarea" 
+              rows="4" 
+              placeholder="Décrivez les besoins, y compris les adaptations liées au handicap le cas échéant..." 
+              oninput="handleFieldChange('ziang', 'needs', this.value)"
+            ></textarea>
+          </div>
+        </div>
+      </article>
+
+    </div>
+
+    <!-- Validation Action -->
+    <div class="validation-section">
+      <div id="warningMessage" class="warning-message" role="alert">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+        <span>Veuillez remplir tous les champs avant de valider.</span>
+      </div>
+
+      <button type="button" class="btn-validate" onclick="handleValidate()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+          <polyline points="22 4 12 14.01 9 11.01"></polyline>
+        </svg>
+        <span>Valider mes réponses</span>
+      </button>
+    </div>
+
+  </main>
+
+  <!-- Autosave indicator -->
+  <aside class="autosave-indicator" aria-live="polite">
+    <div class="pulse-dot"></div>
+    <span>Sauvegarde automatique activée ✓</span>
+  </aside>
+
+  <!-- Modal Bravo / Téléchargement -->
+  <div id="successModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modalTitle" onclick="handleBackdropClick(event)">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-icon-badge">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+          </svg>
+        </div>
+        <h3 id="modalTitle">Bravo !</h3>
+        <p>Vous avez terminé l'exercice avec succès.</p>
+      </div>
+
+      <div class="modal-body">
+        <button type="button" class="btn-modal-action" onclick="generateUserPDF()">
+          <div class="btn-modal-action-left">
+            <div class="modal-action-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+              </svg>
+            </div>
+            <div class="modal-action-text">
+              <div class="title">Télécharger mes réponses</div>
+              <div class="subtitle">Format PDF</div>
+            </div>
+          </div>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </button>
+
+        <button type="button" class="btn-modal-close" onclick="closeModal()">
+          Fermer
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Vanilla JavaScript Logic -->
+  <script>
+    (function() {
+      // --- Modèle d'état initial ---
+      const defaultPersona = {
+        age: '',
+        gender: '',
+        seniority: '',
+        position: '',
+        experienceLevel: '',
+        motivation: '',
+        needs: '',
+        photo: null
+      };
+
+      let state = {
+        michelle: { ...defaultPersona },
+        ziang: { ...defaultPersona }
+      };
+
+      const STORAGE_KEY = 'persona_exercise_data';
+
+      // --- Chargement initial depuis localStorage ---
+      function loadState() {
+        try {
+          const saved = localStorage.getItem(STORAGE_KEY);
+          if (saved) {
+            const parsed = JSON.parse(saved);
+            if (parsed.michelle) state.michelle = { ...defaultPersona, ...parsed.michelle };
+            if (parsed.ziang) state.ziang = { ...defaultPersona, ...parsed.ziang };
+          }
+        } catch (e) {
+          console.warn('Impossible de charger les données sauvegardées :', e);
+        }
+        populateUI();
+      }
+
+      // --- Sauvegarde dans localStorage ---
+      function saveState() {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        } catch (e) {
+          console.warn('Impossible d\'enregistrer dans localStorage :', e);
+        }
+      }
+
+      // --- Synchronisation de l'interface graphique ---
+      function populateUI() {
+        ['michelle', 'ziang'].forEach(personaKey => {
+          const data = state[personaKey];
+          
+          ['age', 'gender', 'seniority', 'position', 'experienceLevel', 'motivation', 'needs'].forEach(field => {
+            const el = document.getElementById(`${personaKey}-${field}`);
+            if (el) el.value = data[field] || '';
+          });
+
+          updatePhotoUI(personaKey);
+        });
+      }
+
+      function updatePhotoUI(personaKey) {
+        const photo = state[personaKey].photo;
+        const wrapper = document.getElementById(`avatarWrapper-${personaKey}`);
+        const img = document.getElementById(`avatarImg-${personaKey}`);
+        const placeholder = document.getElementById(`avatarPlaceholder-${personaKey}`);
+        const btnText = document.getElementById(`photoBtnText-${personaKey}`);
+
+        if (photo) {
+          wrapper.classList.add('has-photo');
+          img.src = photo;
+          img.style.display = 'block';
+          placeholder.style.display = 'none';
+          if (btnText) btnText.textContent = 'Changer la photo';
+        } else {
+          wrapper.classList.remove('has-photo');
+          img.src = '';
+          img.style.display = 'none';
+          placeholder.style.display = 'block';
+          if (btnText) btnText.textContent = 'Ajouter une photo';
+        }
+      }
+
+      // --- Handlers de modifications ---
+      window.handleFieldChange = function(personaKey, field, value) {
+        if (!state[personaKey]) return;
+        state[personaKey][field] = value;
+        saveState();
+
+        const warning = document.getElementById('warningMessage');
+        if (warning && warning.classList.contains('visible')) {
+          warning.classList.remove('visible');
+        }
+      };
+
+      window.handlePhotoUpload = function(personaKey, event) {
+        const file = event.target.files && event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          state[personaKey].photo = e.target.result;
+          saveState();
+          updatePhotoUI(personaKey);
+        };
+        reader.readAsDataURL(file);
+      };
+
+      window.removePhoto = function(personaKey) {
+        state[personaKey].photo = null;
+        const fileInput = document.getElementById(`fileInput-${personaKey}`);
+        if (fileInput) fileInput.value = '';
+        saveState();
+        updatePhotoUI(personaKey);
+      };
+
+      // --- Gestion des accordéons ---
+      window.toggleSection = function(sectionId) {
+        const section = document.getElementById(sectionId);
+        if (!section) return;
+
+        const isCurrentlyOpen = section.classList.contains('open');
+        const headerBtn = section.querySelector('.collapsible-header');
+
+        if (isCurrentlyOpen) {
+          section.classList.remove('open');
+          if (headerBtn) headerBtn.setAttribute('aria-expanded', 'false');
+        } else {
+          section.classList.add('open');
+          if (headerBtn) headerBtn.setAttribute('aria-expanded', 'true');
+        }
+      };
+
+      // --- Validation ---
+      window.handleValidate = function() {
+        const warning = document.getElementById('warningMessage');
+        
+        function isPersonaComplete(persona) {
+          const requiredFields = ['age', 'gender', 'seniority', 'position', 'experienceLevel', 'motivation', 'needs'];
+          return requiredFields.every(field => (persona[field] || '').trim() !== '');
+        }
+
+        const michelleComplete = isPersonaComplete(state.michelle);
+        const ziangComplete = isPersonaComplete(state.ziang);
+
+        if (michelleComplete && ziangComplete) {
+          if (warning) warning.classList.remove('visible');
+          openModal();
+        } else {
+          if (warning) {
+            warning.classList.add('visible');
+            warning.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }
+      };
+
+      // --- Modal ---
+      function openModal() {
+        const modal = document.getElementById('successModal');
+        if (modal) {
+          modal.classList.add('active');
+          document.body.style.overflow = 'hidden';
+        }
+      }
+
+      window.closeModal = function() {
+        const modal = document.getElementById('successModal');
+        if (modal) {
+          modal.classList.remove('active');
+          document.body.style.overflow = '';
+        }
+      };
+
+      window.handleBackdropClick = function(e) {
+        if (e.target.id === 'successModal') {
+          closeModal();
+        }
+      };
+
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+          closeModal();
+        }
+      });
+
+      // --- Mode Plein Écran ---
+      const btnFullscreen = document.getElementById('btnFullscreen');
+      const iconMaximize = document.getElementById('iconMaximize');
+      const iconMinimize = document.getElementById('iconMinimize');
+
+      function isFullscreen() {
+        return !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
+      }
+
+      function updateFullscreenUI() {
+        const active = isFullscreen();
+        if (iconMaximize && iconMinimize) {
+          iconMaximize.style.display = active ? 'none' : 'block';
+          iconMinimize.style.display = active ? 'block' : 'none';
+        }
+        if (btnFullscreen) {
+          const label = active ? 'Quitter le mode plein écran' : 'Activer le mode plein écran';
+          btnFullscreen.setAttribute('aria-label', label);
+          btnFullscreen.setAttribute('title', label);
+        }
+      }
+
+      if (btnFullscreen) {
+        btnFullscreen.addEventListener('click', function() {
+          if (!isFullscreen()) {
+            const root = document.documentElement;
+            if (root.requestFullscreen) {
+              root.requestFullscreen().catch(function(err) {
+                console.warn('Erreur plein écran :', err);
+              });
+            } else if (root.webkitRequestFullscreen) {
+              root.webkitRequestFullscreen();
+            } else if (root.msRequestFullscreen) {
+              root.msRequestFullscreen();
+            }
+          } else {
+            if (document.exitFullscreen) {
+              document.exitFullscreen().catch(function(err) {
+                console.warn('Erreur sortie plein écran :', err);
+              });
+            } else if (document.webkitExitFullscreen) {
+              document.webkitExitFullscreen();
+            } else if (document.msExitFullscreen) {
+              document.msExitFullscreen();
+            }
+          }
+        });
+
+        document.addEventListener('fullscreenchange', updateFullscreenUI);
+        document.addEventListener('webkitfullscreenchange', updateFullscreenUI);
+        document.addEventListener('mozfullscreenchange', updateFullscreenUI);
+        document.addEventListener('MSFullscreenChange', updateFullscreenUI);
+      }
+
+      // --- Génération de l'export PDF des réponses ---
+      window.generateUserPDF = function() {
+        const JsPDFConstructor = window.jspdf ? window.jspdf.jsPDF : window.jsPDF;
+
+        if (!JsPDFConstructor) {
+          alert('Génération du PDF non disponible hors ligne. Veuillez utiliser la fonction d\'impression de votre navigateur.');
+          window.print();
+          return;
+        }
+
+        const doc = new JsPDFConstructor();
+        const date = new Date().toLocaleDateString('fr-FR');
+
+        // Titre principal
+        doc.setFontSize(22);
+        doc.setTextColor(129, 4, 100); // #810464
+        doc.text("Exercice Personas - Mes réponses", 20, 20);
+
+        doc.setFontSize(11);
+        doc.setTextColor(100, 100, 100);
+        doc.text(`Date de réalisation : ${date}`, 20, 30);
+        doc.text("Formation CCE « Exercer la mission de formateur en entreprise » - Résid'Azur", 20, 36);
+
+        function renderPersona(name, data, startY) {
+          doc.setFontSize(17);
+          doc.setTextColor(129, 4, 100);
+          doc.setFont("helvetica", "bold");
+          doc.text(name, 20, startY);
+
+          doc.setFontSize(10);
+          doc.setTextColor(0, 0, 0);
+
+          let currentY = startY + 8;
+          const fields = [
+            { label: "Âge", value: data.age },
+            { label: "Genre", value: data.gender },
+            { label: "Ancienneté", value: data.seniority },
+            { label: "Poste", value: data.position },
+            { label: "Niveau d'expérience", value: data.experienceLevel },
+            { label: "Motivation (ou réticence)", value: data.motivation },
+            { label: "Besoins", value: data.needs }
+          ];
+
+          fields.forEach(f => {
+            doc.setFont("helvetica", "bold");
+            doc.text(`${f.label} :`, 20, currentY);
+            doc.setFont("helvetica", "normal");
+            const splitText = doc.splitTextToSize(f.value || 'Non renseigné', 165);
+            doc.text(splitText, 20, currentY + 5);
+            currentY += 8 + (splitText.length * 4.5);
+
+            if (currentY > 270) {
+              doc.addPage();
+              currentY = 20;
+            }
+          });
+
+          return currentY + 6;
+        }
+
+        let nextY = renderPersona("Michelle", state.michelle, 46);
+        if (nextY > 190) {
+          doc.addPage();
+          nextY = 20;
+        }
+        renderPersona("Ziang", state.ziang, nextY);
+
+        const cleanDate = date.replace(/\//g, '-');
+        doc.save(`Exercice_Personas_Reponses_${cleanDate}.pdf`);
+      };
+
+      // Démarrage
+      document.addEventListener('DOMContentLoaded', loadState);
+      if (document.readyState === 'interactive' || document.readyState === 'complete') {
+        loadState();
+      }
+    })();
+  </script>
+</body>
+</html>

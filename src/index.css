@@ -1,0 +1,20 @@
+@import url('https://fonts.googleapis.com/css2?family=Fira+Sans:wght@300;400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #810464;
+  --color-app-bg: #E8E9DD;
+  --font-sans: "Fira Sans", ui-sans-serif, system-ui, sans-serif;
+}
+
+body {
+  background-color: var(--color-app-bg);
+  color: #1a1a1a;
+  font-family: var(--font-sans);
+}
+
+.markdown-body h1 { @apply text-2xl font-bold mb-4; }
+.markdown-body h2 { @apply text-xl font-bold mb-3 mt-6; }
+.markdown-body p { @apply mb-4 leading-relaxed; }
+.markdown-body ul { @apply list-disc pl-5 mb-4; }
+.markdown-body blockquote { @apply border-l-4 border-primary pl-4 italic my-4; }
